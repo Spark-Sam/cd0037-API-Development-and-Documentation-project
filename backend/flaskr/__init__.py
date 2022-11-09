@@ -25,12 +25,12 @@ def create_app(test_config=None):
     setup_db(app)
 
     """
-    @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
+    @DONE: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
     """
     CORS(app)
 
     """
-    @TODO: Use the after_request decorator to set Access-Control-Allow
+    @DONE: Use the after_request decorator to set Access-Control-Allow
     """
     @app.after_request
     def after_request(response):
@@ -39,7 +39,7 @@ def create_app(test_config=None):
         return response
 
     """
-    @TODO:
+    @DONE:
     Create an endpoint to handle GET requests
     for all available categories.
     """
@@ -61,7 +61,7 @@ def create_app(test_config=None):
 
 
     """
-    @TODO:
+    @DONE:
     Create an endpoint to handle GET requests for questions,
     including pagination (every 10 questions).
     This endpoint should return a list of questions,
@@ -80,7 +80,7 @@ def create_app(test_config=None):
         if len(categories) == 0:
             abort(404)
 
-        category_Dict = {}
+        category_dict = {}
         for category in categories:
             category_dict[category.id] = category.type
 
@@ -99,7 +99,7 @@ def create_app(test_config=None):
     """
 
     """
-    @TODO:
+    @DONE:
     Create an endpoint to DELETE question using a question ID.
     """
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
@@ -127,7 +127,7 @@ def create_app(test_config=None):
     """
 
     """
-    @TODO:
+    @DONE:
     Create an endpoint to POST a new question,
     which will require the question and answer text,
     category, and difficulty score.
@@ -173,7 +173,7 @@ def create_app(test_config=None):
     """
 
     """
-    @TODO:
+    @DONE:
     Create a POST endpoint to get questions based on a search term.
     It should return any questions for whom the search term
     is a substring of the question.
@@ -198,7 +198,7 @@ def create_app(test_config=None):
         category_dict = {}
         for category in categories:
             if category.id in current_category:
-                category_Dict[category.id] = category.type
+                category_dict[category.id] = category.type
 
         return jsonify({
             'success': True,
@@ -216,7 +216,7 @@ def create_app(test_config=None):
     """
 
     """
-    @TODO:
+    @DONE:
     Create a GET endpoint to get questions based on category.
     """
     @app.route('/categories/<int:category_id>/questions', methods=['GET'])
@@ -247,7 +247,7 @@ def create_app(test_config=None):
     """
 
     """
-    @TODO:
+    @DONE:
     Create a POST endpoint to get questions to play the quiz.
     This endpoint should take category and previous question parameters
     and return a random questions within the given category,
@@ -255,18 +255,17 @@ def create_app(test_config=None):
     """
     @app.route('/quizzes', methods=['POST'])
     def create_quiz():
-        body = request.get_json()
-        previous_questions = body.get('previous_questions', None)
-        category = body.get('quiz_category', None)
-        category_id = category['id']
-
         try:
+            body = request.get_json()
+            previous_questions = body.get('previous_questions', None)
+            category = body.get('quiz_category', None)
+            category_id = category['id']
+
+        
             if category_id == 0:
-                questions = Question.query.filter(
-                Question.id.notin_(previous_questions)).all()
+                questions = Question.query.filter(Question.id.notin_(previous_questions)).all()
             else:
-                questions = Question.query.filter(
-                Question.id.notin_(previous_questions),
+                questions = Question.query.filter(Question.id.notin_(previous_questions),
                 Question.category == category_id).all()
             
             if questions is not None:
@@ -277,9 +276,9 @@ def create_app(test_config=None):
             return jsonify({
                 'success': True,
                 'question': random_question
-            }), 422
+            })
         except:
-            abort(500)
+            abort(404)
 
     """
     TEST: In the "Play" tab, after a user selects "All" or a category,
@@ -288,7 +287,7 @@ def create_app(test_config=None):
     """
 
     """
-    @TODO:
+    @DONE:
     Create error handlers for all expected errors
     including 404 and 422.
     """
