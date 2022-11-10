@@ -45,19 +45,30 @@ def create_app(test_config=None):
     """
     @app.route('/categories')
     def retrieve_categories():
-        categories = Category.query.all()
+        category_id = request.args.get("category_id", None, type=int)
+        categories = Category.query.order_by(Category.id).all()
 
         if len(categories) == 0:
             abort(404)
 
-        category_Dict = {}
-        for category in categories:
-            category_Dict[category.id] = category.type
+        if category_id:
+            category = {
+                category.id : category.type for category in categories if category.id==category_id}
+            if len(category) == 0:
+                abort(404)
+            else:
+                return jsonify({
+                    "success" : True,
+                    "category" : category
+                })
+        else:
+            category_dict = {category.id : category.type for category in categories}
 
-        return jsonify({
-            "success" : True,
-            "categories" : category_Dict
-        })
+            return jsonify({
+                "success" : True,
+                "categories" : category_dict
+            })
+        
 
 
     """
@@ -75,20 +86,13 @@ def create_app(test_config=None):
         if len(questions) == 0:
             abort(404)
 
-        categories = Category.query.all()
-
-        if len(categories) == 0:
-            abort(404)
-
-        category_dict = {}
-        for category in categories:
-            category_dict[category.id] = category.type
+        categories = retrieve_categories().get_json().get("categories")
 
         return jsonify({
             "success" : True,
             "questions" : questions,
             "total_questions" : len(selection),
-            "categories" : category_dict,
+            "categories" : categories,
             "current_category" : None
         })
     """
@@ -224,9 +228,6 @@ def create_app(test_config=None):
 
         try:
             category = Category.query.filter(Category.id == category_id).one_or_none()
-            
-            if category is None:
-                abort (404)
 
             selection = Question.query.filter(Question.category == category_id).all()
             current_questions = paginate_questions(request, selection)
@@ -238,7 +239,7 @@ def create_app(test_config=None):
                 "current_category" : category.type
                 })
         except:
-            abort(400)
+            abort(404)
 
     """
     TEST: In the "List" tab / main screen, clicking on one of the
@@ -257,8 +258,8 @@ def create_app(test_config=None):
     def create_quiz():
         try:
             body = request.get_json()
-            previous_questions = body.get('previous_questions', None)
-            category = body.get('quiz_category', None)
+            previous_questions = body.get('previous_questions')
+            category = body.get('quiz_category')
             category_id = category['id']
 
         
@@ -268,10 +269,10 @@ def create_app(test_config=None):
                 questions = Question.query.filter(Question.id.notin_(previous_questions),
                 Question.category == category_id).all()
             
-            if questions is not None:
+            if questions :
                 random_question = random.choice(questions).format()
             else:
-                abort(404)
+                random_question = False
 
             return jsonify({
                 'success': True,
